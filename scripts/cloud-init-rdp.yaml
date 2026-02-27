@@ -1,0 +1,29 @@
+#cloud-config
+# Cloud-init template used by create-multipass-rdp.sh
+# Installs a lightweight XFCE desktop + xrdp so the VM can be reached
+# from any RDP client (Windows Remote Desktop, Remmina, etc.).
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - xfce4
+  - xfce4-goodies
+  - xrdp
+  - dbus-x11
+  - x11-xserver-utils
+
+runcmd:
+  # Add the xrdp user to the ssl-cert group so it can read the TLS key
+  - adduser xrdp ssl-cert
+
+  # Tell xrdp to start an XFCE session for every user
+  - echo "startxfce4" > /etc/skel/.xsession
+
+  # Apply the same setting for the default ubuntu account
+  - echo "startxfce4" > /home/ubuntu/.xsession
+  - chown ubuntu:ubuntu /home/ubuntu/.xsession
+
+  # Enable and (re)start xrdp
+  - systemctl enable xrdp
+  - systemctl restart xrdp
